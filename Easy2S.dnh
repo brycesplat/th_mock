@@ -1,0 +1,217 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Boss Easy Spell 2"]
+#Text["Code by brycesplat[r]Explosive Protocol[r] \"Grenades Galore\""]
+//#BGM["./namofbgm.mp3"] //Background Music
+
+#include "./img/shot/ZUNShot_Const.txt"
+#include "./lib/animation.dnh"
+#include "./lib/selibrary.txt"
+#include "./lib/Cutin.dnh"
+
+let objBoss;
+let objScene = GetEnemyBossSceneObjectID();
+let gunLocation = ObjEnemy_Create(OBJ_ENEMY);
+let blank = GetCurrentScriptDirectory~"./img/blank.png";
+
+@Event{
+	alternative(GetEventType())
+    case(EV_REQUEST_LIFE)
+    {
+        SetScriptResult(300);
+    }
+    case(EV_REQUEST_TIMER)
+    {
+        SetScriptResult(60);
+    }
+    case(EV_REQUEST_SPELL_SCORE)
+    {
+        SetScriptResult(1000000);
+    }
+}
+
+@Initialize{
+	objBoss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+    ObjEnemy_Regist(objBoss);
+    ObjEnemy_Regist(gunLocation);
+
+    ObjEnemyBossScene_StartSpell(objScene);
+
+    ObjMove_SetDestAtFrame(objBoss, GetCenterX(), 60, 60);
+    ObjCutin_SetSpellcardS4("Explosive Protocol \"Grenades Galore\"", blank, NAZRIN, 104, 104, 240);
+    ObjCutin_LaunchS3(NAZRIN, blank, "Normal");
+    behaviorBoss(GetCommonData("ARM_STAND", 0));
+
+    TDrawLoop;
+    TFinalize;
+    MainTask;
+}
+
+@MainLoop{
+    ObjEnemy_SetIntersectionCircleToShot(objBoss,ObjMove_GetX(objBoss),ObjMove_GetY(objBoss),32);
+    ObjEnemy_SetIntersectionCircleToPlayer(objBoss,ObjMove_GetX(objBoss),ObjMove_GetY(objBoss),24);
+
+    yield;
+}
+
+task MainTask{
+    ObjEnemy_SetDamageRate(objBoss, 0, 0);
+
+    setAction(GetCommonData("SPELL", 0), 100);
+
+    wait(110);
+
+    movement;
+
+    ObjEnemy_SetDamageRate(objBoss, 10, 10);
+    
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){
+        fireA;
+        wait(120);
+        fireB;
+        wait(120);
+    }
+}
+
+task fireA{
+    let grenade = CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 0, 0, 92, 1);
+    let grenade1 = CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 0, 0, 92, 1);
+
+    spin(grenade);
+    spin(grenade1);
+    ObjMove_SetDestAtFrame(grenade, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+    ObjMove_SetDestAtFrame(grenade1, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+    wait(60);
+    
+    let angleT1 = GetAngleToPlayer(grenade);
+    let angleT2 = GetAngleToPlayer(grenade1);
+
+    ascent (i in 0..6) {
+        SE_Play(laser0, 50);
+        CreateStraightLaserA1(ObjMove_GetX(grenade), ObjMove_GetY(grenade), angleT1 + (i * 60), 500, 10, 90, 3, 30);
+        SE_Play(laser0, 50);
+        CreateStraightLaserA1(ObjMove_GetX(grenade1), ObjMove_GetY(grenade1), angleT2 + (i * 60), 500, 10, 90, 3, 30);
+    }
+
+    Obj_Delete(grenade);
+    Obj_Delete(grenade1);
+}
+
+task fireB{
+    let rand1 = truncate(rand(0, 6));
+    let rand2 = truncate(rand(0, 6));
+    let rand3 = truncate(rand(0, 6));
+    let grenade = CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 0, 0, 96, 1);
+    let grenade1 = CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 0, 0, 96, 1);
+    let grenade2 = CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 0, 0, 96, 1);
+
+    spin(grenade);
+    spin(grenade1);
+    spin(grenade2);
+    ObjMove_SetDestAtFrame(grenade, rand(1, GetThirdX), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+    ObjMove_SetDestAtFrame(grenade1, rand(GetThirdX(), GetTwoThirdX()), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+    ObjMove_SetDestAtFrame(grenade2, rand(GetTwoThirdX(), GetFullX()), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+    wait(60);
+    
+    ascent (i in 0..8) {
+        ascent (j in 0..6) {
+            SE_Play(shot1, 50);
+            let bullet = CreateShotA2(ObjMove_GetX(grenade), ObjMove_GetY(grenade), 0, rand1 + (j * 60) + (i * 17), 0.05, 0.8, 96, 1);
+            let bullet1 = CreateShotA2(ObjMove_GetX(grenade1), ObjMove_GetY(grenade1), 0, rand2 + (j * 60) + (i * 17), 0.05, 0.8, 96, 1);
+            let bullet2 = CreateShotA2(ObjMove_GetX(grenade2), ObjMove_GetY(grenade2), 0, rand3 + (j * 60) + (i * 17), 0.05, 0.8, 96, 1);
+            accel(bullet);
+            accel(bullet1);
+            accel(bullet2);
+        }
+        wait(10);
+    }
+    Obj_Delete(grenade);
+    Obj_Delete(grenade1);
+    Obj_Delete(grenade2);
+}
+
+function wait(n){loop(n){yield;}}
+
+task movement{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){
+        setAction(GetCommonData("MOVE", 0), 60);
+        ObjMove_SetDestAtFrame(objBoss, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+        wait(240);
+    }
+}
+
+task movementGun{
+    setAction(GetCommonData("GUN_MOVE", 0), 60);
+    ObjMove_SetDestAtFrame(objBoss, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+}
+
+function GetCenterX(){
+    return GetStgFrameWidth() / 2;
+}
+
+function GetCenterY(){
+	return GetStgFrameHeight() / 2;
+}
+
+function rand_int(min, max){
+  return round(rand(min, max))
+}
+
+task TDrawLoop{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){
+        drawBoss(objBoss);
+        yield;
+    }
+}
+
+task TFinalize{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){yield;}
+    if(ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SHOOTDOWN_COUNT) + ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT) == 0){
+        AddScore(ObjEnemyBossScene_GetInfo(objScene, INFO_SPELL_SCORE))
+    }
+    Obj_Delete(gunLocation);
+    Obj_Delete(objBoss);
+    DeleteShotAll(TYPE_ALL, TYPE_IMMEDIATE);
+    SetAutoDeleteObject(true);
+    CloseScript(GetOwnScriptID());
+    return;
+}
+
+function getGunX(){
+    return ObjMove_GetX(objBoss) - 7;
+}
+
+function getGunY(){
+    return ObjMove_GetY(objBoss) - 12;
+}
+
+function resetGun() {
+    ObjMove_SetX(gunLocation, getGunX());
+    ObjMove_SetY(gunLocation, getGunY());
+}
+
+task spin(object){
+    let num = rand(3, 8);
+    while (!Obj_IsDeleted(object)) {
+        ObjRender_SetAngleZ(object, ObjRender_GetAngleZ(object) + num);
+        yield;
+    }
+}
+
+task accel (object) {
+    ObjMove_AddPatternA2(object, 30, 0.5, NO_CHANGE, 0.1, 0, 3);
+    wait(30);
+    SE_Play(chime1, 50);
+}
+
+function GetThirdX(){
+    return GetStgFrameWidth() / 3;
+}
+
+function GetTwoThirdX(){
+    return GetStgFrameWidth() * 2 / 3;
+}
+
+function GetFullX(){
+    return GetStgFrameWidth();
+}

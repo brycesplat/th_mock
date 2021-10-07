@@ -1,0 +1,14 @@
+/*
+|| Index for Back Ground Music [BGM]
+*/
+let dirBGM = GetCurrentScriptDirectory() ~ "bgm/";
+
+let bgmList = [
+  dirBGM ~ "bgm1.ogg",
+  dirBGM ~ "bgm2.ogg",
+  dirBGM ~ "bgm3.ogg",
+  dirBGM ~ "bgm4.ogg",
+  dirBGM ~ "bgmPre1.mp3"
+];
+
+SetCommonData("Music", bgmList);

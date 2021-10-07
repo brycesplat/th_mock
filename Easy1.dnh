@@ -1,0 +1,161 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Boss Easy Non-spell 1"]
+#Text["Code by brycesplat"]
+//#BGM["./namofbgm.mp3"] //Background Music
+
+#include "./img/shot/ZUNShot_Const.txt"
+#include "./lib/animation.dnh"
+#include "./lib/selibrary.txt"
+
+let objBoss;
+let objScene = GetEnemyBossSceneObjectID();
+let gunLocation = ObjEnemy_Create(OBJ_ENEMY);
+
+@Event{
+	alternative(GetEventType())
+    case(EV_REQUEST_LIFE)
+    {
+        SetScriptResult(1500);
+    }
+    case(EV_REQUEST_TIMER)
+    {
+        SetScriptResult(60);
+    }
+    case(EV_REQUEST_SPELL_SCORE)
+    {
+        SetScriptResult(1000000);
+    }
+}
+
+@Initialize{
+	objBoss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+    ObjEnemy_Regist(objBoss);
+    ObjEnemy_Regist(gunLocation);
+
+    ObjMove_SetDestAtFrame(objBoss, GetCenterX(), 60, 60);
+    behaviorBoss(GetCommonData("STAND", 0));
+
+    TDrawLoop;
+    TFinalize;
+    MainTask;
+}
+
+@MainLoop{
+    ObjEnemy_SetIntersectionCircleToShot(objBoss,ObjMove_GetX(objBoss),ObjMove_GetY(objBoss),32);
+    ObjEnemy_SetIntersectionCircleToPlayer(objBoss,ObjMove_GetX(objBoss),ObjMove_GetY(objBoss),24);
+
+    yield;
+}
+
+task MainTask{
+    ObjEnemy_SetDamageRate(objBoss, 0, 0);
+
+    wait(80);
+
+    ObjEnemy_SetDamageRate(objBoss, 100, 100);
+
+    setAction(GetCommonData("ARM_STAND", 0), 0);
+    changeBehavior(GetCommonData("ARM_STAND", 0));
+
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){
+        setAction(GetCommonData("PULL", 0), 18);
+        wait(18);
+        fireA;
+        wait(39);
+        setAction(GetCommonData("GUN_SEATHE", 0), 18);
+        wait(25);
+
+        setAction(GetCommonData("READY_RIGHT", 0), 45);
+        wait(45);
+        fireB;
+        wait(50);
+        setAction(GetCommonData("SEATHE", 0), 0);
+        wait(18);
+
+        movement(60);
+        wait(60);
+    }
+}
+
+function wait(n){loop(n){yield;}}
+
+task movement (frames){
+    setAction(GetCommonData("MOVE", 0), frames);
+    ObjMove_SetDestAtFrame(objBoss, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), frames);
+    yield;
+}
+
+function GetCenterX(){
+    return GetStgFrameWidth() / 2;
+}
+
+function GetCenterY(){
+	return GetStgFrameHeight() / 2;
+}
+
+function rand_int(min, max){
+  return round(rand(min, max))
+}
+
+task TDrawLoop{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){
+        drawBoss(objBoss);
+        yield;
+    }
+}
+
+task TFinalize{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){yield;}
+    Obj_Delete(objBoss);
+    Obj_Delete(gunLocation);
+    DeleteShotAll(TYPE_ALL, TYPE_IMMEDIATE);
+    SetAutoDeleteObject(true);
+    CloseScript(GetOwnScriptID());
+    return;
+}
+
+task fireA{
+    let i = 0;
+
+    ObjMove_SetX(gunLocation, getGunX());
+    ObjMove_SetY(gunLocation, getGunY());
+
+    while (ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0 && i < 3) {
+        let angleT = GetAngleToPlayer(gunLocation);
+        setAction(GetCommonData("FIRE", 0), 4);
+        wait(3);
+        SE_Play(shot1,15);
+        CreateShotA1(getGunX(), getGunY(), 4, angleT, 186, 1);
+        CreateShotA1(getGunX(), getGunY(), 4, angleT + (10 * (i + 1)), 186, 1);
+        CreateShotA1(getGunX(), getGunY(), 4, angleT - (10 * (i + 1)), 186, 1);
+        i++;
+        wait(10);
+    }
+}
+
+task fireB{
+    let i = 0;
+    let angleT = GetAngleToPlayer(gunLocation);
+
+    setAction(GetCommonData("SLASH_RIGHT", 0), 100);
+
+    while (ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0 && i < 5) {
+        SE_Play(shot3,15);
+        CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 4, angleT, 292, 1);
+        CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 4, angleT + 20, 292, 1);
+        CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 4, angleT - 20, 292, 1);
+        CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 4, angleT + 40, 292, 1);
+        CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 4, angleT - 40, 292, 1);
+        i++;
+        wait(10);
+    }
+}
+
+function getGunX() {
+    return ObjMove_GetX(objBoss) - 7;
+}
+
+function getGunY() {
+    return ObjMove_GetY(objBoss) - 12;
+}

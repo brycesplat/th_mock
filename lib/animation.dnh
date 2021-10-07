@@ -1,0 +1,606 @@
+/*
+|| This is the library file for making the boss animate.
+|| Most code is based off of Concealed the Conclusion's code
+*/
+
+#include "./../img/characters/index.dnh"
+
+setupCharacters();
+
+// This is a list of constants to create a state for each animation set.
+let STAND = 0;
+SetCommonData("STAND", STAND);
+let ARM_STAND = 1;
+SetCommonData("ARM_STAND", ARM_STAND);
+let BLINK = 2;
+SetCommonData("BLINK", BLINK);
+let ARM_BLINK = 3;
+SetCommonData("ARM_BLINK", ARM_BLINK);
+let MOVE = 4;
+SetCommonData("MOVE", MOVE);
+let GUN_MOVE = 5;
+SetCommonData("GUN_MOVE", GUN_MOVE);
+let LEFT = 6;
+SetCommonData("LEFT", LEFT);
+let GUN_LEFT = 7;
+SetCommonData("GUN_LEFT", GUN_LEFT);
+let RIGHT = 8;
+SetCommonData("RIGHT", RIGHT);
+let GUN_RIGHT = 9;
+SetCommonData("GUN_RIGHT", GUN_RIGHT);
+let SPELL = 10;
+SetCommonData("SPELL", SPELL);
+let PULL = 11;
+SetCommonData("PULL", PULL);
+let AIM = 12;
+SetCommonData("AIM", AIM);
+let FIRE = 13;
+SetCommonData("FIRE", FIRE);
+let RELOAD = 14;
+SetCommonData("RELOAD", RELOAD);
+let READY_RIGHT = 15;
+SetCommonData("READY_RIGHT", READY_RIGHT);
+let SLASH_RIGHT = 16;
+SetCommonData("SLASH_RIGHT", SLASH_RIGHT);
+let READY_LEFT = 17;
+SetCommonData("READY_LEFT", READY_LEFT);
+let SLASH_LEFT = 18;
+SetCommonData("SLASH_LEFT", SLASH_LEFT);
+let SEATHE = 19;
+SetCommonData("SEATHE", SEATHE);
+let GUN_SEATHE = 20;
+SetCommonData("GUN_SEATHE", GUN_SEATHE);
+
+// This is a list of constants for every 128 x 128 sprite in the file specifically for the boss
+let PIC_LENGTH = 128;
+let PIC_STAND0 = [0,0];
+let PIC_STAND1 = [0,1];
+let PIC_STAND2 = [0,2];
+let PIC_ARM_STAND0 = [1,0];
+let PIC_ARM_STAND1 = [1,1];
+let PIC_ARM_STAND2 = [1,2];
+let PIC_BLINK0 = [2,0];
+let PIC_BLINK1 = [2,1];
+let PIC_ARM_BLINK0 = [3,0];
+let PIC_ARM_BLINK1 = [3,1];
+let PIC_RIGHT0 = [4,0];
+let PIC_RIGHT1 = [4,1];
+let PIC_GUN_RIGHT0 = [5,0];
+let PIC_GUN_RIGHT1 = [5,1];
+let PIC_LEFT0 = [6,0];
+let PIC_LEFT1 = [6,1];
+let PIC_GUN_LEFT0 = [7,0];
+let PIC_GUN_LEFT1 = [7,1];
+let PIC_SPELL0 = [8,0];
+let PIC_SPELL1 = [8,1];
+let PIC_SPELL2 = [8,2];
+let PIC_PULL0 = [9,0];
+let PIC_PULL1 = [9,1];
+let PIC_PULL2 = [9,2];
+let PIC_FIRE0 = [10,0];
+let PIC_FIRE1 = [10,1];
+let PIC_RELOAD0 = [11,0];
+let PIC_RELOAD1 = [11,1];
+let PIC_RELOAD2 = [11,2];
+let PIC_SLASH_RIGHT0 = [12,0];
+let PIC_SLASH_RIGHT1 = [12,1];
+let PIC_SLASH_RIGHT2 = [12,2];
+let PIC_SLASH_RIGHT3 = [12,3];
+let PIC_SLASH_LEFT0 = [13,0];
+let PIC_SLASH_LEFT1 = [13,1];
+let PIC_SLASH_LEFT2 = [13,2];
+
+// List of global variables.
+let ifDead = false;
+
+let picAlpha = 255;
+
+let globalDefaultAction = STAND;
+
+let globalCurrentAction = globalDefaultAction;
+
+let globalCurrentActionFrame = 0;
+
+let globalMaxActionFrame = 0;
+
+let bossPic = GetCommonData("pixelBoss", 0);
+
+
+/*
+|| From what I can understand, this is to set the default behavior of the boss.
+||
+|| @para action (uses the animation state constants)
+*/
+
+task behaviorBoss(action){
+  globalDefaultAction = action;
+
+  loop{
+    if(ifDead){
+      break;
+    }
+    setAction(globalDefaultAction, 0);
+    while(globalCurrentActionFrame < globalMaxActionFrame && !ifDead){
+      globalCurrentActionFrame++;
+      yield;
+    }
+  }
+}
+
+/*
+|| Sets the action using the Constants declared above with how many frames the animation goes on for.
+|| 
+|| @para action (Constants above), frames (int)
+*/
+
+function setAction(action, frames){
+  alternative (action)
+  case (STAND, ARM_STAND, AIM) {
+    frames = 36000;
+  }
+  case (SPELL) {
+    frames = 100;
+  }
+  case (PULL, SEATHE, GUN_SEATHE){
+    frames = 18;
+  }
+  globalCurrentAction = action;
+  globalCurrentActionFrame = 0;
+  globalMaxActionFrame = frames;
+}
+
+/*
+|| Draws the boss floating using the image file.
+||
+|| @para bossObjRef (object)
+*/
+
+function drawBoss (bossObjRef) {
+  //This is a variable to hold the Constant sprite states for the case statements.
+  let animationArray = [];
+
+  alternative (globalCurrentAction)
+  case (STAND) {
+    //Variable declaration
+    let frameCount = 12;
+    let currentFrameCount = globalCurrentActionFrame % (frameCount * 12);
+    let spriteFrame = 2;
+    let animationFrame = [0, 1, 2, 0, 1, 2, 0, 3, 4, 0, 1, 2];
+    let animationCount = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+    //The spriteFrame will change after 12 frames to the next animationFrame array value.
+    ascent (i in 0..12) {
+      if( currentFrameCount < frameCount * animationCount[i]){
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    //AnimationFrame value will be used to find the sprite to draw.
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_STAND0;
+    }
+    case (1) {
+      animationArray = PIC_STAND1;
+    }
+    case (2) {
+      animationArray = PIC_STAND2;
+    }
+    case (3) {
+      animationArray = PIC_BLINK0;
+    }
+    case (4) {
+      animationArray = PIC_BLINK1;
+    }
+  }
+  case (ARM_STAND) {
+    //Variable declaration
+    let frameCount = 12;
+    let currentFrameCount = globalCurrentActionFrame % (frameCount * 12);
+    let spriteFrame = 2;
+    let animationFrame = [0, 1, 2, 0, 1, 2, 0, 3, 4, 0, 1, 2];
+    let animationCount = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+    //The spriteFrame will change after 12 frames to the next animationFrame array value.
+    ascent (i in 0..12) {
+      if( currentFrameCount < frameCount * animationCount[i]){
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    //AnimationFrame value will be used to find the sprite to draw.
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_ARM_STAND0;
+    }
+    case (1) {
+      animationArray = PIC_ARM_STAND1;
+    }
+    case (2) {
+      animationArray = PIC_ARM_STAND2;
+    }
+    case (3) {
+      animationArray = PIC_ARM_BLINK0;
+    }
+    case (4) {
+      animationArray = PIC_ARM_BLINK1;
+    }
+  }
+  case (MOVE, LEFT, RIGHT) {
+
+    if(globalCurrentAction == MOVE && ObjMove_GetSpeed(bossObjRef) < 0.1){
+      animationArray = PIC_ARM_STAND0;
+    }
+    else{
+      //Variable declaration
+      let currentFrameCount0 = 10;
+      if(globalMaxActionFrame < 40){
+        currentFrameCount0 = truncate(globalMaxActionFrame/4);
+      }
+      let currentFrameCount1 = globalMaxActionFrame - currentFrameCount0;
+      let spriteFrame = 0;
+      let animationFrame = [0, 1, 0];
+      let animationCount = [currentFrameCount0, currentFrameCount1, globalMaxActionFrame];
+
+      ascent (i in 0..3) {
+        if (globalCurrentActionFrame < animationCount[i]) {
+          spriteFrame = animationFrame[i];
+          break;
+        }
+        else{
+
+        }
+      }
+
+      let isMoveLeft = true;
+      alternative (globalCurrentAction)
+      case (RIGHT) {
+        isMoveLeft = false;
+      }
+      case (MOVE) {
+        if( cos(ObjMove_GetAngle(bossObjRef)) > 0){
+          isMoveLeft = false;
+        }
+      }
+
+      alternative (spriteFrame)
+      case (0) {
+        if (isMoveLeft) {
+          animationArray = PIC_LEFT0;
+        } else {
+          animationArray = PIC_RIGHT0;
+        }
+      }
+      case (1) {
+        if (isMoveLeft) {
+          animationArray = PIC_LEFT1;
+        } else {
+          animationArray = PIC_RIGHT1;
+        }
+      }
+    }
+  }
+  case (GUN_MOVE, GUN_LEFT, GUN_RIGHT) {
+
+    if(globalCurrentAction == MOVE && ObjMove_GetSpeed(bossObjRef) < 0.1){
+      animationArray = PIC_FIRE0;
+    }
+    else{
+      //Variable declaration
+      let currentFrameCount0 = 10;
+      if(globalMaxActionFrame < 40){
+        currentFrameCount0 = truncate(globalMaxActionFrame/4);
+      }
+      let currentFrameCount1 = globalMaxActionFrame - currentFrameCount0;
+      let spriteFrame = 0;
+      let animationFrame = [0, 1, 0];
+      let animationCount = [currentFrameCount0, currentFrameCount1, globalMaxActionFrame];
+
+      ascent (i in 0..3) {
+        if (globalCurrentActionFrame < animationCount[i]) {
+          spriteFrame = animationFrame[i];
+          break;
+        }
+      }
+
+      let isMoveLeft = true;
+      alternative (globalCurrentAction)
+      case (GUN_RIGHT) {
+        isMoveLeft = false;
+      }
+      case (GUN_MOVE) {
+        if( cos(ObjMove_GetAngle(bossObjRef)) > 0){
+          isMoveLeft = false;
+        }
+      }
+
+      alternative (spriteFrame)
+      case (0) {
+        if (isMoveLeft) {
+          animationArray = PIC_GUN_LEFT0;
+        } else {
+          animationArray = PIC_GUN_RIGHT0;
+        }
+      }
+      case (1) {
+        if (isMoveLeft) {
+          animationArray = PIC_GUN_LEFT1;
+        } else {
+          animationArray = PIC_GUN_RIGHT1;
+        }
+      }
+    }
+  }
+  case (SPELL) {
+    //Variable declaration
+    let spriteFrame = 0;
+    let animationFrame = [0, 1, 2, 1, 0];
+    let animationCount = [6, 12, 88, 94, 100];
+
+    //For loop to check the current animation frame and change the spriteFrame to the next slot.
+    ascent (i in 0..5) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_SPELL0;
+    }
+    case (1) {
+      animationArray = PIC_SPELL1;
+    }
+    case (2) {
+      animationArray = PIC_SPELL2;
+    }
+  }
+  case (PULL) {
+    //Variable declaration
+    let spriteFrame = 1;
+    let animationFrame = [0, 1, 2];
+    let animationCount = [6, 12, 18];
+
+    ascent (i in 0..3) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_PULL0;
+    }
+    case (1) {
+      animationArray = PIC_PULL1;
+    }
+    case (2) {
+      animationArray = PIC_PULL2;
+      changeBehavior(AIM);
+    }
+  }
+  case (AIM){
+    animationArray = PIC_FIRE0;
+  }
+  case (FIRE) {
+    //Variable declaration
+    let spriteFrame = 1;
+    let animationFrame = [0, 1];
+    let animationCount = [ globalMaxActionFrame-3, globalMaxActionFrame];
+
+    ascent (i in 0..2) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_FIRE0;
+    }
+    case (1) {
+      animationArray = PIC_FIRE1;
+    }
+  }
+  case (RELOAD) {
+    //Variable declaration
+    let spriteFrame = 0;
+    let animationFrame = [0, 1, 2, 1];
+    let animationCount = [globalMaxActionFrame/3, (globalMaxActionFrame*2)/4, (globalMaxActionFrame*3)/4, globalMaxActionFrame];
+
+    //For loop to check the current animation frame and change the spriteFrame to the next slot.
+    ascent (i in 0..4) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_RELOAD0;
+    }
+    case (1) {
+      animationArray = PIC_RELOAD1;
+    }
+    case (2) {
+      animationArray = PIC_RELOAD2;
+    }
+  }
+  case (READY_RIGHT) {
+    //Variable declaration
+    let frameCount = 6;
+    if(globalMaxActionFrame < 24){
+      frameCount = truncate(globalMaxActionFrame/4);
+    }
+    let spriteFrame = 2;
+    let animationFrame = [0, 1, 2];
+    let animationCount = [ frameCount, frameCount*2, globalMaxActionFrame];
+
+    ascent (i in 0..3) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_STAND0;
+    }
+    case (1) {
+      animationArray = PIC_SLASH_RIGHT0;
+    }
+    case (2) {
+      animationArray = PIC_SLASH_RIGHT1;
+    }
+  }
+  case (SLASH_RIGHT) {
+    //Variable declaration
+    let frameCount = 6;
+    if(globalMaxActionFrame < 18){
+      frameCount = truncate(globalMaxActionFrame/3);
+    }
+    let spriteFrame = 1;
+    let animationFrame = [0, 1];
+    let animationCount = [ frameCount, globalMaxActionFrame];
+
+    ascent (i in 0..2) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_SLASH_RIGHT2;
+    }
+    case (1) {
+      animationArray = PIC_SLASH_RIGHT3;
+    }
+  }
+  case (READY_LEFT) {
+    //Variable declaration
+    let frameCount = 6;
+    if(globalMaxActionFrame < 24){
+      frameCount = truncate(globalMaxActionFrame/3);
+    }
+    let spriteFrame = 0;
+    let animationFrame = [0, 1];
+    let animationCount = [frameCount, globalMaxActionFrame];
+
+    ascent (i in 0..2) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_STAND0;
+    }
+    case (1) {
+      animationArray = PIC_SLASH_LEFT0;
+    }
+  }
+  case (SLASH_LEFT) {
+    //Variable declaration
+    let frameCount = 6;
+    if(globalMaxActionFrame < 18){
+      frameCount = truncate(globalMaxActionFrame/3);
+    }
+    let spriteFrame = 1;
+    let animationFrame = [0, 1];
+    let animationCount = [ frameCount, globalMaxActionFrame];
+
+    ascent (i in 0..2) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_SLASH_LEFT1;
+    }
+    case (1) {
+      animationArray = PIC_SLASH_LEFT2;
+    }
+  }
+  case (SEATHE) {
+    //Variable declaration
+    let spriteFrame = 1;
+    let animationFrame = [0, 1, 2];
+    let animationCount = [6, 12, 18];
+
+    ascent (i in 0..3) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_SLASH_RIGHT3;
+    }
+    case (1) {
+      animationArray = PIC_SLASH_RIGHT1;
+    }
+    case (2) {
+      animationArray = PIC_SLASH_RIGHT0;
+    }
+  }
+  case (GUN_SEATHE) {
+    //Variable declaration
+    let spriteFrame = 1;
+    let animationFrame = [0, 1, 2];
+    let animationCount = [6, 12, 18];
+
+    ascent (i in 0..3) {
+      if (globalCurrentActionFrame < animationCount[i]) {
+        spriteFrame = animationFrame[i];
+        break;
+      }
+    }
+
+    alternative (spriteFrame)
+    case (0) {
+      animationArray = PIC_PULL2;
+    }
+    case (1) {
+      animationArray = PIC_PULL1;
+    }
+    case (2) {
+      animationArray = PIC_PULL0;
+      changeBehavior(ARM_STAND);
+    }
+  }
+  others {
+    animationArray = PIC_STAND0;
+  }
+  let xPicPoint = PIC_LENGTH * animationArray[0];
+  let yPicPoint = PIC_LENGTH * animationArray[1];
+
+  ObjPrim_SetTexture(bossObjRef, bossPic);
+  ObjRender_SetScaleXYZ(bossObjRef, 1.0, 1.0, 1.0);
+  ObjSprite2D_SetSourceRect(bossObjRef, xPicPoint, yPicPoint+1, xPicPoint + PIC_LENGTH-1, yPicPoint + PIC_LENGTH);
+  ObjSprite2D_SetDestCenter(bossObjRef);
+}
+
+function bossDied () {
+  ifDead = true;
+}
+
+function changeBehavior (action){
+  globalDefaultAction = action;
+  setAction(action,0);
+}

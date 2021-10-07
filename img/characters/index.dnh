@@ -1,0 +1,12 @@
+/*
+|| Index to pair sprites with profiles.
+*/
+#include "./pixel/index.dnh"
+
+function setupCharacters () {
+  setupPixel();
+
+  let bossPicArray = [GetCommonData("pixelBoss", 0)];
+
+  SetCommonData("bossPicArray", bossPicArray);
+}

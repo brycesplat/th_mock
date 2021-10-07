@@ -1,0 +1,223 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Boss Easy Non-spell 2"]
+#Text["Code by brycesplat[r]"]
+//#BGM["./namofbgm.mp3"] //Background Music
+
+#include "./img/shot/ZUNShot_Const.txt"
+#include "./lib/animation.dnh"
+#include "./se/selibrary.txt"
+
+let objBoss;
+let objScene = GetEnemyBossSceneObjectID();
+let gunLocation = ObjEnemy_Create(OBJ_ENEMY);
+
+@Event{
+	alternative(GetEventType())
+    case(EV_REQUEST_LIFE)
+    {
+        SetScriptResult(600);
+    }
+    case(EV_REQUEST_TIMER)
+    {
+        SetScriptResult(60);
+    }
+    case(EV_REQUEST_SPELL_SCORE)
+    {
+        SetScriptResult(1000000);
+    }
+}
+
+@Initialize{
+	objBoss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+    ObjEnemy_Regist(objBoss);
+    ObjEnemy_Regist(gunLocation);
+
+    ObjMove_SetDestAtFrame(objBoss, GetCenterX(), 60, 60);
+    behaviorBoss(GetCommonData("ARM_STAND", 0));
+
+    TDrawLoop;
+    TFinalize;
+    MainTask;
+}
+
+@MainLoop{
+    ObjEnemy_SetIntersectionCircleToShot(objBoss,ObjMove_GetX(objBoss),ObjMove_GetY(objBoss),32);
+    ObjEnemy_SetIntersectionCircleToPlayer(objBoss,ObjMove_GetX(objBoss),ObjMove_GetY(objBoss),24);
+
+    yield;
+}
+
+task MainTask{
+    ObjEnemy_SetDamageRate(objBoss, 0, 0);
+
+    wait(60);
+
+    ObjEnemy_SetDamageRate(objBoss, 100, 100);
+
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){
+        setAction(GetCommonData("PULL", 0), 0);
+        wait(18);
+        changeBehavior(GetCommonData("AIM", 0));
+
+        fireA;
+
+        wait(245);
+
+        setAction(GetCommonData("GUN_SEATHE", 0), 0);
+        wait(18);
+        changeBehavior(GetCommonData("ARM_STAND", 0));
+
+        fireB;
+        wait(60);
+
+        movement;
+        wait(60);
+    }
+}
+
+task fireA{
+    resetGun();
+    ascent (i in 0..5) {
+        let angleT;
+
+        setAction(GetCommonData("FIRE", 0), 5);
+        wait(4);
+        alternative (i)
+        case (0) {
+            angleT = GetAngleToPlayer(gunLocation);
+            let bullet = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT, -0.07, 0, 186, 1);
+
+            homing(bullet);
+            wait(45);
+        }
+        case (1) {
+            angleT = GetAngleToPlayer(gunLocation);
+            let bullet1 = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT + 20, -0.07, 0, 186, 1);
+            let bullet2 = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT - 20, -0.07, 0, 186, 1);
+
+            homing(bullet1);
+            homing(bullet2);
+            wait(45);
+        }
+        case (2) {
+            angleT = GetAngleToPlayer(gunLocation);
+            let bullet1 = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT + 35, -0.07, 0, 186, 1);
+            let bullet2 = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT, -0.07, 0, 186, 1);
+            let bullet3 = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT - 35, -0.07, 0, 186, 1);
+
+            homing(bullet1);
+            homing(bullet2);
+            homing(bullet3);
+            wait(45);
+        }
+        case (3) {
+            angleT = GetAngleToPlayer(gunLocation);
+            let bullet1 = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT + 20, -0.07, 0, 186, 1);
+            let bullet2 = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT - 20, -0.07, 0, 186, 1);
+
+            homing(bullet1);
+            homing(bullet2);
+            wait(45);
+        }
+        case (4) {
+            angleT = GetAngleToPlayer(gunLocation);
+            let bullet = CreateShotA2(ObjMove_GetX(gunLocation), ObjMove_GetY(gunLocation), 4, angleT, -0.07, 0, 186, 1);
+
+            homing(bullet);
+            wait(45);
+        }
+    }
+}
+
+task fireB{
+    let grenade = CreateShotA1(ObjMove_GetX(objBoss), ObjMove_GetY(objBoss), 0, 0, 90, 1);
+    let angleT = GetAngleToPlayer(grenade);
+
+    wait(30);
+
+    spin(grenade);
+    ObjMove_SetDestAtFrame(grenade, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 30);
+    wait(30);
+    
+    ascent (i in 0..10) {
+        ascent (j in 0..10) {
+            let bullet = CreateShotA2(ObjMove_GetX(grenade), ObjMove_GetY(grenade), 0, (j * 36) + (i * 16), 0.05, 0.3, 90, 1);
+            accel(bullet);
+        }
+        wait(5);
+    }
+    Obj_Delete(grenade);
+}
+
+function wait(n){loop(n){yield;}}
+
+task movement{
+    setAction(GetCommonData("MOVE", 0), 60);
+    ObjMove_SetDestAtFrame(objBoss, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+}
+
+task movementGun{
+    setAction(GetCommonData("GUN_MOVE", 0), 60);
+    ObjMove_SetDestAtFrame(objBoss, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+}
+
+function GetCenterX(){
+    return GetStgFrameWidth() / 2;
+}
+
+function GetCenterY(){
+	return GetStgFrameHeight() / 2;
+}
+
+function rand_int(min, max){
+  return round(rand(min, max))
+}
+
+task TDrawLoop{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){
+        drawBoss(objBoss);
+        yield;
+    }
+}
+
+task TFinalize{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){yield;}
+    Obj_Delete(gunLocation);
+    Obj_Delete(objBoss);
+    DeleteShotAll(TYPE_ALL, TYPE_IMMEDIATE);
+    SetAutoDeleteObject(true);
+    CloseScript(GetOwnScriptID());
+    return;
+}
+
+function getGunX(){
+    return ObjMove_GetX(objBoss) - 7;
+}
+
+function getGunY(){
+    return ObjMove_GetY(objBoss) - 12;
+}
+
+function resetGun() {
+    ObjMove_SetX(gunLocation, getGunX());
+    ObjMove_SetY(gunLocation, getGunY());
+}
+
+task homing(bullet){
+    wait(69);
+    let angleT = GetAngleToPlayer(bullet);
+    ObjMove_AddPatternA2(bullet, 1, 4, angleT, 0, 0, 4);
+}
+
+task spin(object){
+    let num = rand(3, 8);
+    while (!Obj_IsDeleted(object)) {
+        ObjRender_SetAngleZ(object, ObjRender_GetAngleZ(object) + num);
+        yield;
+    }
+}
+
+task accel (object) {
+    ObjMove_AddPatternA2(object, 30, 0.5, NO_CHANGE, 0.1, 0, 4);
+}

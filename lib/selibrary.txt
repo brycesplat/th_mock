@@ -1,0 +1,84 @@
+let poof =  GetCurrentScriptDirectory~"./../se/se_enep00_2.wav";
+let explosion = GetCurrentScriptDirectory~"./../se/se_enep01.wav";
+
+let dam1 = GetCurrentScriptDirectory~"./../se/se_damage00.wav";
+let dam2 = GetCurrentScriptDirectory~"./../se/se_damage01.wav";
+
+let shot1 = GetCurrentScriptDirectory~"./../se/se_tan00.wav";
+let shot2 = GetCurrentScriptDirectory~"./../se/se_tan01.wav";
+let shot3 = GetCurrentScriptDirectory~"./../se/se_tan02.wav";
+let shot4 = GetCurrentScriptDirectory~"./../se/se_tan03.wav";
+
+let chime1 = GetCurrentScriptDirectory~"./../se/se_kira00.wav";
+let chime2 = GetCurrentScriptDirectory~"./../se/se_kira01.wav";
+
+let laser0 = GetCurrentScriptDirectory~"./../se/se_lazer00.wav";
+let laser1 = GetCurrentScriptDirectory~"./../se/se_gun00.wav";
+let laser2 = GetCurrentScriptDirectory~"./../se/se_lazer01.wav";
+let laser3 = GetCurrentScriptDirectory~"./../se/Laser2.wav";
+
+let lenlaser1 = GetCurrentScriptDirectory~"./../se/lenlaser1.wav";
+let lenlaser2 = GetCurrentScriptDirectory~"./../se/lenlaser2.wav";
+let lenshot1 = GetCurrentScriptDirectory~"./../se/lenshot4.wav";
+let lenshot2 = GetCurrentScriptDirectory~"./../se/lenshot5.wav";
+
+let lencharge1 = GetCurrentScriptDirectory~"./../se/charge_2.wav";
+
+let charge0 = GetCurrentScriptDirectory~"./../se/se_ch00.wav";
+let charge1 = GetCurrentScriptDirectory~"./../se/se_ch02.wav";
+let charge2 = GetCurrentScriptDirectory~"./../se/se_power0.wav";
+let charge3 = GetCurrentScriptDirectory~"./../se/charge.wav";
+let charge4 = GetCurrentScriptDirectory~"./../se/power0.wav";
+let charge5 = GetCurrentScriptDirectory~"./../se/Charge2.wav";
+
+let DED = GetCurrentScriptDirectory~"./../se/se_pldead00.wav";
+let DEDEND = GetCurrentScriptDirectory~"./../se/se_pldead01.wav";
+
+let explode = GetCurrentScriptDirectory~"./../se/se_enep02.wav";
+let explode2 = GetCurrentScriptDirectory~"./../se/se_explode.wav";
+
+let bubble = GetCurrentScriptDirectory~"./../se/bubble.wav";
+
+let boon0 = GetCurrentScriptDirectory~"./../se/se_boon00.wav";
+let boon1 = GetCurrentScriptDirectory~"./../se/se_boon01.wav";
+
+let compositespell = GetCurrentScriptDirectory~"./../se/compositespell.wav";
+let spellcard = GetCurrentScriptDirectory~"./../se/se_cat00.wav";
+
+let timeout1 = GetCurrentScriptDirectory~"./../se/se_timeout.wav";
+let timeout2 = GetCurrentScriptDirectory~"./../se/se_timeout2.wav";
+
+let Confirm = GetCurrentScriptDirectory~"./../se/se_ok00.wav";
+let Choose = GetCurrentScriptDirectory~"./../se/se_select00.wav";
+let ping = GetCurrentScriptDirectory~"./../se/ping.wav";
+
+let alert = GetCurrentScriptDirectory~"./../se/se_life1.wav";
+let hum = GetCurrentScriptDirectory~"./../se/lenmecha04.wav";
+let hop = GetCurrentScriptDirectory~"./../se/se_lgodsget.wav";
+let outerring = GetCurrentScriptDirectory~"./../se/se_lgods2.wav";
+let complete = GetCurrentScriptDirectory~"./../se/se_cardget.wav";
+
+let HMexplode1 = GetCurrentScriptDirectory~"./../se/846.wav";
+let HMexplode2 = GetCurrentScriptDirectory~"./../se/847.wav";
+let HMexplode3 = GetCurrentScriptDirectory~"./../se/832.wav";
+let HMexplode4 = GetCurrentScriptDirectory~"./../se/firework_final.wav";
+
+let ding = GetCurrentScriptDirectory~"./../se/ding.wav";
+let split = GetCurrentScriptDirectory~"./../se/split.wav";
+let drumroll = GetCurrentScriptDirectory~"./../se/drumroll.wav";
+let wham = GetCurrentScriptDirectory~"./../se/thud.wav";
+
+/////////BONUS///////////
+let sumo = GetCurrentScriptDirectory~"./../se/bonus/subaluwa.wav";
+let glint = GetCurrentScriptDirectory~"./../se/bonus/glint.wav";
+let chaching = GetCurrentScriptDirectory~"./../se/bonus/cha-ching.wav";
+let eviltalk = GetCurrentScriptDirectory~"./../se/bonus/eviltalk.wav";
+
+task SE_Play(let path, let vl){
+let seobj = ObjSound_Create;
+ObjSound_Load(seobj,path);
+ObjSound_Play(seobj);
+ObjSound_SetVolumeRate(seobj,vl);
+loop(120){yield;}
+RemoveSound(path);
+}

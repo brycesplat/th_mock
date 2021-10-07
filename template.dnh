@@ -1,0 +1,116 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["template"]
+#Text["Code by brycesplat[r]template"]
+//#BGM["./namofbgm.mp3"] //Background Music
+
+#include "./img/shot/ZUNShot_Const.txt"
+#include "./lib/animation.dnh"
+#include "./lib/selibrary.txt"
+
+let objBoss;
+let objScene = GetEnemyBossSceneObjectID();
+let gunLocation = ObjEnemy_Create(OBJ_ENEMY);
+
+@Event{
+	alternative(GetEventType())
+    case(EV_REQUEST_LIFE)
+    {
+        SetScriptResult(600);
+    }
+    case(EV_REQUEST_TIMER)
+    {
+        SetScriptResult(60);
+    }
+    case(EV_REQUEST_SPELL_SCORE)
+    {
+        SetScriptResult(1000000);
+    }
+}
+
+@Initialize{
+	objBoss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+    ObjEnemy_Regist(objBoss);
+    ObjEnemy_Regist(gunLocation);
+
+    ObjMove_SetDestAtFrame(objBoss, GetCenterX(), 60, 60);
+    behaviorBoss(GetCommonData("ARM_STAND", 0));
+
+    TDrawLoop;
+    TFinalize;
+    MainTask;
+}
+
+@MainLoop{
+    ObjEnemy_SetIntersectionCircleToShot(objBoss,ObjMove_GetX(objBoss),ObjMove_GetY(objBoss),32);
+    ObjEnemy_SetIntersectionCircleToPlayer(objBoss,ObjMove_GetX(objBoss),ObjMove_GetY(objBoss),24);
+
+    yield;
+}
+
+task MainTask{
+    ObjEnemy_SetDamageRate(objBoss, 0, 0);
+
+    wait(60);
+
+    ObjEnemy_SetDamageRate(objBoss, 100, 100);
+    
+    
+}
+
+function wait(n){loop(n){yield;}}
+
+task movement{
+    setAction(GetCommonData("MOVE", 0), 60);
+    ObjMove_SetDestAtFrame(objBoss, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+}
+
+task movementGun{
+    setAction(GetCommonData("GUN_MOVE", 0), 60);
+    ObjMove_SetDestAtFrame(objBoss, rand(GetCenterX() + 90, GetCenterX() - 90), rand(GetCenterY() - 60, GetCenterY() - 120), 60);
+}
+
+function GetCenterX(){
+    return GetStgFrameWidth() / 2;
+}
+
+function GetCenterY(){
+	return GetStgFrameHeight() / 2;
+}
+
+function rand_int(min, max){
+  return round(rand(min, max))
+}
+
+task TDrawLoop{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){
+        drawBoss(objBoss);
+        yield;
+    }
+}
+
+task TFinalize{
+    while(ObjEnemy_GetInfo(objBoss, INFO_LIFE) > 0){yield;}
+    if(ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SHOOTDOWN_COUNT) + ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT) == 0){
+        AddScore(ObjEnemyBossScene_GetInfo(objScene, INFO_SPELL_SCORE))
+    }
+    Obj_Delete(gunLocation);
+    Obj_Delete(objBoss);
+    DeleteShotAll(TYPE_ALL, TYPE_IMMEDIATE);
+    SetAutoDeleteObject(true);
+    CloseScript(GetOwnScriptID());
+    return;
+}
+
+function getGunX(){
+    return ObjMove_GetX(objBoss) - 7;
+}
+
+function getGunY(){
+    return ObjMove_GetY(objBoss) - 12;
+}
+
+function resetGun() {
+    ObjMove_SetX(gunLocation, getGunX());
+    ObjMove_SetY(gunLocation, getGunY());
+}

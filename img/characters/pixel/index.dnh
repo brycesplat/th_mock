@@ -1,0 +1,9 @@
+/*
+|| Script to get the sprite sheet
+*/
+
+let pixelScriptDirectory = GetCurrentScriptDirectory();
+
+function setupPixel () {
+  SetCommonData("pixelBoss", pixelScriptDirectory ~ "/boss_unk.png");
+}
